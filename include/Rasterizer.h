@@ -18,7 +18,8 @@
 
 void tlInitialize();
 void tlClear(unsigned int mask);
-void tlClearColor(int color);
+void tlClearColor(int color); // 0xaarrggbb
+void tlClearColorRGB(unsigned char r, unsigned char g, unsigned char b);
 void tlSetShaders(
     void (*Vertex) (Vertex* vertex), 
     void (*fragment)(struct Vertex* vertex, Color* output));

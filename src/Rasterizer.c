@@ -1,5 +1,6 @@
 #include "../include/Rasterizer.h"
 #include "../include/Vertex.h"
+#include "../include/Endianness.h"
 
 #include <limits.h>
 #include <pthread.h>
@@ -30,7 +31,8 @@ static void (*fragment_shader)(struct Vertex*, Color*);
 void tlClear(unsigned int mask)
 {
     if(mask & COLOR_BUFFER_BIT)
-        memset(back_buffer, clear_color, screensize);
+        for(int i = 0; i < height*width; ++i)
+            ((int*)back_buffer)[i] = clear_color;
     if(mask & DEPTH_BUFFER_BIT)
         memset(depth_buffer, 9999999, width*height*4);
 }
@@ -40,21 +42,34 @@ void tlClearColor(int c)
 	clear_color = c;
 }
 
-static void _tlDrawPoint(Vec3 p, Color c)
+void tlClearColorRGB(unsigned char r, unsigned char g, unsigned char b)
 {
-    const int x = (int)p[0];
-    const int y = (int)p[1];
+    union Convert{ int hex; unsigned char rgb[4]; };
+    static union Convert converter;
+    converter.rgb[0] = 0;
+    converter.rgb[1] = r;
+    converter.rgb[2] = g;
+    converter.rgb[3] = b;
+    clear_color = converter.hex;
+}
+
+static void _tlDrawPoint(struct Vertex* vertex)
+{
+    const int x = (int)vertex->pos[0];
+    const int y = (int)vertex->pos[1];
     if(x >= 0 && x < width && y >= 0 && y < height)
     {
         const int index = y * width + x;
-        if(p[2] <= depth_buffer[index])
+        if(vertex->pos[2] <= depth_buffer[index])
         {
+            Color color = {0};
+            fragment_shader(vertex, &color);
             const long long location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel * 0.125f) + (y+vinfo.yoffset) * finfo.line_length;
-            *(back_buffer+location)     = (unsigned char)c[2];
-            *(back_buffer+location + 1) = (unsigned char)c[1];
-            *(back_buffer+location + 2) = (unsigned char)c[0];
+            *(back_buffer+location)     = (unsigned char)color[2];
+            *(back_buffer+location + 1) = (unsigned char)color[1];
+            *(back_buffer+location + 2) = (unsigned char)color[0];
             *(back_buffer+location + 3) = (unsigned char)255;
-            depth_buffer[index] = p[2];
+            depth_buffer[index] = vertex->pos[2];
         }
     }
 }
@@ -95,7 +110,6 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
     int i; 
     float x_inc, y_inc, z_inc, err_1, err_2;
     Vec3 point = a->pos;
-    _tlDrawPoint(point, a->col);
 
     Vec3 d = b->pos - a->pos;
 
@@ -107,6 +121,8 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
     d2[2] = lmn[2] * 2.f;
     Vertex vert;
     Color fragColor = {0};
+    _tlDrawPoint(a);
+    _tlDrawPoint(b);
     if ((lmn[0] >= lmn[1]) && (lmn[0] >= lmn[2])) 
     {
         err_1 = d2[1] - lmn[0];
@@ -115,7 +131,7 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
         {
             VertexInterpPtr(&vert, a, b, Distance(a->pos, point));
             fragment_shader(&vert, &fragColor);
-            _tlDrawPoint(vert.pos, fragColor);
+            _tlDrawPoint(&vert);
             if (err_1 > 0) 
             {
                 point[1] += y_inc;
@@ -139,7 +155,7 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
         {
             VertexInterpPtr(&vert, a, b, Distance(a->pos, point));
             fragment_shader(&vert, &fragColor);
-            _tlDrawPoint(vert.pos, fragColor);
+            _tlDrawPoint(&vert);
             if (err_1 > 0) {
                 point[0] += x_inc;
                 err_1 -= d2[1];
@@ -161,7 +177,7 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
         {
             VertexInterpPtr(&vert, a, b, Distance(a->pos, point));
             fragment_shader(&vert, &fragColor);
-            _tlDrawPoint(vert.pos, fragColor);
+            _tlDrawPoint(&vert);
 
             if (err_1 > 0) 
             {
@@ -179,10 +195,10 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
         }
     }
     fragment_shader(&vert, &fragColor);
-    _tlDrawPoint(vert.pos, fragColor);
+    _tlDrawPoint(&vert);
 }
 
-void Draw_Triangle(Vertex* a, Vertex* b, Vertex* c)
+void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
 {
     const float db = Distance(b->pos,c->pos);
     Vertex A, B;
@@ -219,11 +235,9 @@ void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_
     {
         case POINTS:
         {
-            Color fragColor;
             for(int i = 0; i < __elements; ++i)
             {
-                fragment_shader(&vertices[i], &fragColor);
-                _tlDrawPoint(vertices[i].pos, fragColor);
+                _tlDrawPoint(&vertices[i]);
             }
         }
         break;
@@ -248,15 +262,15 @@ void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_
         break;
         case TRIANGLES:
             for(unsigned int i = 0; i < __elements; i+=3)
-                 Draw_Triangle(&vertices[i], &vertices[i+1], &vertices[i+2]);
+                 _tlDrawTriangle(&vertices[i], &vertices[i+1], &vertices[i+2]);
         break;
         case TRIANGLES_LOOP:
             for(unsigned int i = 1; i < __elements; i+=2)
-                    Draw_Triangle(&vertices[i-1], &vertices[i], &vertices[(i+1) % __elements]);
+                    _tlDrawTriangle(&vertices[i-1], &vertices[i], &vertices[(i+1) % __elements]);
         break;
         case TRIANGLES_STRIP:
             for(unsigned int i = 1; i < __elements; i+=2)
-                Draw_Triangle(&vertices[i-1], &vertices[i], &vertices[i+1]);
+                _tlDrawTriangle(&vertices[i-1], &vertices[i], &vertices[i+1]);
 		break;
         default:
         break;
@@ -274,4 +288,5 @@ void tlDestroy()
     munmap(front_buffer, screensize);
     free(back_buffer);
     free(depth_buffer);
+    close(fbfd);
 }
