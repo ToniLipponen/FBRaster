@@ -104,6 +104,7 @@ void tlSetShaders(void (*Vertex)(Vertex* vertex), void (*fragment)(struct Vertex
     fragment_shader = fragment;
 }
 
+// Clean up this mess.
 static void _tlDrawLine(Vertex* a, Vertex* b)
 {
 	int same_color;
