@@ -28,18 +28,11 @@ int main()
     tlSetShaders(vertex, fragment);
     InitMouse();
 
-    LoadImage("res/box.jpg", &img);
-    scalem = ScaleMat4X4(800, 800, 1);
+    LoadImage("res/box_128x128.jpeg", &img);
+    scalem = ScaleMat4X4(50, 50, 50);
     trans  = TranslateMat4X4((Vec3){960, 500, 10});
-    // Vertex quad[] = 
-    // {
-    //     {{-0.5,-0.5, 0.0, 1}, {0,   0,   255, 255}, {0,1}}, 
-    //     {{ 0.5,-0.5, 0.0, 1}, {0,   255, 0,   255}, {1,1}},
-    //     {{ 0.5, 0.5, 0.0, 1}, {255, 0,   0,   255}, {1,0}},
-    //     {{-0.5, 0.5, 0.0, 1}, {255,255,255,   255}, {0,0}}
-    // };
 
-    Vertex cube[] = 
+    const Vertex cube[] = 
     {
         {{-1.0f,-1.0f,-1.0f, 1}, {0,0,0,0}, {0.0f, 0.0f}},
         {{-1.0f,-1.0f, 1.0f, 1}, {0,0,0,0}, {1.0f, 0.0f}},
@@ -78,7 +71,7 @@ int main()
         {{-1.0f, 1.0f, 1.0f, 1}, {0,0,0,0}, {0.0f, 1.0f}},
         {{ 1.0f,-1.0f, 1.0f, 1}, {0,0,0,0}, {1.0f, 0.0f}}
     };
-    unsigned int cubeIndices[] = {
+    const unsigned int cubeIndices[] = {
 		/*front*/
 		0, 1, 2,
 		2, 3, 0,
@@ -114,14 +107,16 @@ int main()
         else if(ev.button == MOUSE_RIGHT)
             scalem = ScaleMat4X4(zoom -= 5.f, zoom, zoom);
 
-    	trans = TranslateMat4X4((Vec3){mouseX, mouseY, 10});
-	    rotm = RotateMat4X4(0, rot+=0.5f, 0);
-
         tlClear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
-        // tlDrawBufferIndexed(TRIANGLES, buff, index, 6);
-        // tlDrawBufferIndexed(TRIANGLES, cube, cubeIndex, 12);
+    	trans = TranslateMat4X4((Vec3){mouseX, mouseY, 10});
+	    rotm = RotateMat4X4(rot*1.5f, rot+=0.5f, 0);
+
         tlDrawBufferIndexed(TRIANGLES, cube, 0, 36);
-        tlSwapBuffers();
+        trans = TranslateMat4X4((Vec3){1920/2.f, 1080/2.f, 20});
+		rotm  = RotateMat4X4(rot, 0, rot);
+		tlDrawBufferIndexed(TRIANGLES, cube, 0, 36);
+
+		tlSwapBuffers();
     }
     FreeImage(&img);
     tlDestroy();

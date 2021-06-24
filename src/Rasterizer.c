@@ -3,6 +3,7 @@
 #include "../include/Endianness.h"
 
 #include <limits.h>
+#include <pmmintrin.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdalign.h>
@@ -68,7 +69,7 @@ static void _tlDrawPoint(struct Vertex* vertex)
             *(back_buffer+location)     = (unsigned char)color[2];
             *(back_buffer+location + 1) = (unsigned char)color[1];
             *(back_buffer+location + 2) = (unsigned char)color[0];
-            *(back_buffer+location + 3) = (unsigned char)255;
+            *(back_buffer+location + 3) = (unsigned char)255-color[3];
             depth_buffer[index] = vertex->pos[2];
         }
     }
@@ -104,99 +105,16 @@ void tlSetShaders(void (*Vertex)(Vertex* vertex), void (*fragment)(struct Vertex
     fragment_shader = fragment;
 }
 
-// Clean up this mess.
 static void _tlDrawLine(Vertex* a, Vertex* b)
 {
-	int same_color;
-    int i; 
-    float x_inc, y_inc, z_inc, err_1, err_2;
-    Vec3 point = a->pos;
-
-    Vec3 d = b->pos - a->pos;
-
-    x_inc = (d[0] < 0) ? -1 : 1;
-    y_inc = (d[1] < 0) ? -1 : 1;
-    z_inc = (d[2] < 0) ? -1 : 1;
-	Vec3 lmn = _mm_abs_ps_2(d);
-	Vec3 d2 = lmn * 2.f;
-    d2[2] = lmn[2] * 2.f;
-    Vertex vert;
-    Color fragColor = {0};
-    _tlDrawPoint(a);
-    _tlDrawPoint(b);
-    if ((lmn[0] >= lmn[1]) && (lmn[0] >= lmn[2])) 
+    const float db = Distance(a->pos, b->pos);
+    Vertex vertex;
+    for(unsigned int i = 0; i < (int)(db); ++i)
     {
-        err_1 = d2[1] - lmn[0];
-        err_2 = d2[2] - lmn[0];
-        for (i = 0; i < lmn[0]; i++) 
-        {
-            VertexInterpPtr(&vert, a, b, Distance(a->pos, point));
-            fragment_shader(&vert, &fragColor);
-            _tlDrawPoint(&vert);
-            if (err_1 > 0) 
-            {
-                point[1] += y_inc;
-                err_1 -= d2[0];
-            }
-            if (err_2 > 0)
-            {
-                point[2] += z_inc;
-                err_2 -= d2[0];
-            }
-            err_1 += d2[1];
-            err_2 += d2[2];
-            point[0] += x_inc;
-        }
-    } 
-    else if ((lmn[1] >= lmn[0]) && (lmn[1] >= lmn[2])) 
-    {
-        err_1 = d2[0] - lmn[1];
-        err_2 = d2[2] - lmn[1];
-        for (i = 0; i < lmn[1]; i++) 
-        {
-            VertexInterpPtr(&vert, a, b, Distance(a->pos, point));
-            fragment_shader(&vert, &fragColor);
-            _tlDrawPoint(&vert);
-            if (err_1 > 0) {
-                point[0] += x_inc;
-                err_1 -= d2[1];
-            }
-            if (err_2 > 0) {
-                point[2] += z_inc;
-                err_2 -= d2[1];
-            }
-            err_1 += d2[0];
-            err_2 += d2[2];
-            point[1] += y_inc;
-        }
-    } 
-    else 
-    {
-        err_1 = d2[1] - lmn[2];
-        err_2 = d2[0] - lmn[2];
-        for (i = 0; i < lmn[2]; i++) 
-        {
-            VertexInterpPtr(&vert, a, b, Distance(a->pos, point));
-            fragment_shader(&vert, &fragColor);
-            _tlDrawPoint(&vert);
-
-            if (err_1 > 0) 
-            {
-                point[1] += y_inc;
-                err_1 -= d2[2];
-            }
-            if (err_2 > 0) 
-            {
-                point[0] += x_inc;
-                err_2 -= d2[2];
-            }
-            err_1 += d2[1];
-            err_2 += d2[0];
-            point[2] += z_inc;
-        }
+        if(VertexInterpPtr(&vertex, a, b, i) >= 1.f)
+            return;
+        _tlDrawPoint(&vertex);
     }
-    fragment_shader(&vert, &fragColor);
-    _tlDrawPoint(&vert);
 }
 
 void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
@@ -227,7 +145,8 @@ void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_
 	}
     else
     {
-        memcpy(vertices, buffer, sizeof(Vertex) * elements);
+        for(int i = 0; i < elements; ++i)
+            vertices[i] = buffer[i];
         for(int i = 0; i < elements; ++i)
             vertex_shader(&vertices[i]);
     }

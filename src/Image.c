@@ -19,14 +19,16 @@ void FreeImage(Image* image)
 Vec4 SampleImage(Image* image, Vec2 uv)
 {
     Vec4 color = {0};
-    const int x = uv[0] * image->width;
-    const int y = uv[1] * image->height;
-    if(x < image->width && x >= 0 && y < image->height && y >= 0)
+	const Vec2 p = uv * (Vec2){image->width, image->height};
+    
+    if(p[0] < image->width && p[0] >= 0 && p[1] < image->height && p[1] >= 0)
     {
-        color[0] = image->data[clampi((y * image->width * image->bpp) + x*image->bpp,   0, image->width * image->height * image->bpp)];
-        color[1] = image->data[clampi((y * image->width * image->bpp) + x*image->bpp+1, 0, image->width * image->height * image->bpp)];
-        color[2] = image->data[clampi((y * image->width * image->bpp) + x*image->bpp+2, 0, image->width * image->height * image->bpp)];
-        color[3] = 255.f;
+		const unsigned int index = ((int)p[1] * image->width * image->bpp) + (int)p[0] * image->bpp;
+		const unsigned int limit = image->width * image->height * image->bpp;
+		color[0] = image->data[clampi(index,   0, limit)];
+		color[1] = image->data[clampi(index+1, 0, limit)];
+		color[2] = image->data[clampi(index+2, 0, limit)];
+		color[3] = 255.f;
     }
 
     return color;
