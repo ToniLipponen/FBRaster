@@ -268,3 +268,10 @@ void tlSwapBuffers()
 {
     memcpy(front_buffer, back_buffer, screensize);
 }
+
+void tlDestroy()
+{
+    munmap(front_buffer, screensize);
+    free(back_buffer);
+    free(depth_buffer);
+}

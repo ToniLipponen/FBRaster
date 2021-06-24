@@ -24,11 +24,11 @@ void fragment(struct Vertex* vert, Color* output)
 
 int main()
 {
-    LoadImage("res/box.jpg", &img);
     tlInitialize();
     tlSetShaders(vertex, fragment);
-
     InitMouse();
+
+    LoadImage("res/box.jpg", &img);
     scalem = ScaleMat4X4(800, 800, 1);
     trans  = TranslateMat4X4((Vec3){960, 500, 10});
     Vertex buff[] = 
@@ -44,8 +44,7 @@ int main()
     float x = 960.f;
     float zoom = 800;
     int mouseX = 0, mouseY = 0;
-	int counter = 0;
-	while(counter < 60)
+	while(1)
     {
         mouse_event ev = MousePoll();
         mouseX += ev.xoffset;
@@ -63,4 +62,5 @@ int main()
         tlSwapBuffers();
     }
     FreeImage(&img);
+    tlDestroy();
 }

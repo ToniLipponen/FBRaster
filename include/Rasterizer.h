@@ -25,5 +25,5 @@ void tlSetShaders(
 void tlDrawBuffer(Vertex* buffer, unsigned int elements);
 void tlDrawBufferIndexed(unsigned int mode, Vertex* buffer, unsigned int* indexbuffer, unsigned int elements);
 void tlSwapBuffers();
-
+void tlDestroy();
 #endif
