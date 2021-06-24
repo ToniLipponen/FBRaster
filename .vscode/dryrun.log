@@ -1,0 +1,5 @@
+make --dry-run --keep-going --print-directory
+make: Entering directory '/home/toni/Projects/Rasterizer'
+make -C src && ar -rcs libFBRaster.a src/*.o
+make: Leaving directory '/home/toni/Projects/Rasterizer'
+ 
