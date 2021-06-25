@@ -15,7 +15,6 @@ void vertex(Vertex* vertex)
 }
 
 Image img;
-#define discard_fragment return -1
 int fragment(struct Vertex* vert, Color* output)
 {
     *output = SampleImage(&img, vert->uv);
