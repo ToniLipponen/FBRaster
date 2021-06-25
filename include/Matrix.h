@@ -32,7 +32,7 @@ static inline Mat4x4 ScaleMat4X4(float x, float y, float z)
     m.row[3] = (Vec4){0, 0, 0, 1};
     return m;
 }
-static inline Mat4x4 TranslateMat4X4(Vec3 v)
+static inline Mat4x4 TranslateMat4X4(Vec4 v)
 {
     Mat4x4 m;
     m.row[0] = (Vec4){1, 0, 0, v[0]};

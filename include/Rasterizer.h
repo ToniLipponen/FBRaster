@@ -16,13 +16,17 @@
 #define DEPTH_BUFFER_BIT 0x1
 #define COLOR_BUFFER_BIT 0x2
 
+#define BACKFACE_CULLING 0x1
+
 void tlInitialize();
+void tlEnable(unsigned int setting);
+void tlDisable(unsigned int setting);
 void tlClear(unsigned int mask);
 void tlClearColor(int color); // 0xaarrggbb
 void tlClearColorRGB(unsigned char r, unsigned char g, unsigned char b);
 void tlSetShaders(
     void (*Vertex) (Vertex* vertex), 
-    void (*fragment)(struct Vertex* vertex, Color* output));
+    int (*fragment)(struct Vertex* vertex, Color* output));
 void tlDrawBuffer(Vertex* buffer, unsigned int elements);
 void tlDrawBufferIndexed(unsigned int mode, Vertex* buffer, unsigned int* indexbuffer, unsigned int elements);
 void tlSwapBuffers();

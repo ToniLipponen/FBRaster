@@ -16,6 +16,8 @@
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 
+
+static unsigned int settings_int = 0;
 static int fbfd = 0;
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
@@ -23,11 +25,11 @@ static long int screensize = 0;
 static int width, height;
 static unsigned char* front_buffer = NULL;
 static unsigned char* back_buffer = NULL;
-static int clear_color = 100;
+static int clear_color = 0x44444444;
 static float* depth_buffer;
 
 static void (*vertex_shader)(struct Vertex*);
-static void (*fragment_shader)(struct Vertex*, Color*);
+static int  (*fragment_shader)(struct Vertex*, Color*);
 
 void tlClear(unsigned int mask)
 {
@@ -64,7 +66,8 @@ static void _tlDrawPoint(struct Vertex* vertex)
         if(vertex->pos[2] <= depth_buffer[index])
         {
             Color color = {0};
-            fragment_shader(vertex, &color);
+            if(fragment_shader(vertex, &color) == -1)
+				return;
             const long long location = (x+vinfo.xoffset) * (vinfo.bits_per_pixel * 0.125f) + (y+vinfo.yoffset) * finfo.line_length;
             *(back_buffer+location)     = (unsigned char)color[2];
             *(back_buffer+location + 1) = (unsigned char)color[1];
@@ -99,7 +102,17 @@ void tlInitialize()
     tlClear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
 }
 
-void tlSetShaders(void (*Vertex)(Vertex* vertex), void (*fragment)(struct Vertex*, Color* output))
+void tlEnable(unsigned int setting)
+{
+    settings_int |= (1 << (setting - 1));
+}
+
+void tlDisable(unsigned int setting)
+{
+    settings_int &= ~(1 << (setting - 1));
+}
+
+void tlSetShaders(void (*Vertex)(Vertex* vertex), int (*fragment)(struct Vertex*, Color* output))
 {
     vertex_shader = Vertex;
     fragment_shader = fragment;
@@ -109,7 +122,7 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
 {
     const float db = Distance(a->pos, b->pos);
     Vertex vertex;
-    for(unsigned int i = 0; i < (int)(db); ++i)
+    for(unsigned int i = 0; i < db; ++i)
     {
         if(VertexInterpPtr(&vertex, a, b, i) >= 1.f)
             return;
@@ -119,7 +132,16 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
 
 void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
 {
-    const float db = Distance(b->pos,c->pos);
+	// Todo: Implement backface culling
+	/*
+    if(settings_int & BACKFACE_CULLING)
+    {
+	    const Vec3 normal = triangle_normal(a->pos, b->pos, c->pos);
+        if(Vec4_Dot(normal, (Vec4){0.0,0.0,1,0}) > 0.0f)
+            return;
+    }
+	*/
+	const float db = Distance(b->pos,c->pos);
     Vertex A, B;
     for(unsigned int i = 0; i < db; ++i)
     {
@@ -132,7 +154,8 @@ void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
 
 void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_buffer, unsigned int elements)
 {
-    Vertex* vertices = (Vertex*)malloc(elements * sizeof(Vertex));
+    // Vertex* vertices = (Vertex*)malloc(elements * sizeof(Vertex));
+    Vertex* vertices = (Vertex*)aligned_alloc(sizeof(Vertex), elements * sizeof(Vertex));
     unsigned int __elements = elements;
 
     if(index_buffer)

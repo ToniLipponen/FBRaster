@@ -25,9 +25,10 @@ inline static Vertex VertexInterp(Vertex* a, Vertex* b, const float v)
 inline static float VertexInterpPtr(Vertex* ptr, Vertex* a, Vertex* b, const float v)
 {
     const float d = v / DistancePtr(&a->pos, &b->pos);
-    ptr->pos = (a->pos * d) + (b->pos * (1.f - d));
-    ptr->col = (a->col * d) + (b->col * (1.f - d));
-    ptr->uv  = (a->uv  * d) + (b->uv  * (1.f - d));
+    const float one_minus_d = 1.f - d;
+    ptr->pos = (a->pos * d) + (b->pos * one_minus_d);
+    ptr->col = (a->col * d) + (b->col * one_minus_d);
+    ptr->uv  = (a->uv  * d) + (b->uv  * one_minus_d);
     return d;
 }
 #endif
