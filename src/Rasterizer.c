@@ -132,15 +132,12 @@ static void _tlDrawLine(Vertex* a, Vertex* b)
 
 void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
 {
-	// Todo: Implement backface culling
-	/*
     if(settings_int & BACKFACE_CULLING)
     {
-	    const Vec3 normal = triangle_normal(a->pos, b->pos, c->pos);
-        if(Vec4_Dot(normal, (Vec4){0.0,0.0,1,0}) > 0.0f)
+        if(Vec4_Dot(a->col, (Vec4){0,0,1,0}) >= 0.0)
             return;
     }
-	*/
+
 	const float db = Distance(b->pos,c->pos);
     Vertex A, B;
     for(unsigned int i = 0; i < db; ++i)
@@ -154,10 +151,10 @@ void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
 
 void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_buffer, unsigned int elements)
 {
-    // Vertex* vertices = (Vertex*)malloc(elements * sizeof(Vertex));
-    Vertex* vertices = (Vertex*)aligned_alloc(sizeof(Vertex), elements * sizeof(Vertex));
-    unsigned int __elements = elements;
-
+    if(!buffer || elements == 0)
+        return;
+    Vertex* vertices = (Vertex*)aligned_alloc(alignof(Vertex), elements * sizeof(Vertex));
+   
     if(index_buffer)
     {
 		for(int i = 0; i < elements; ++i)
@@ -169,34 +166,47 @@ void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_
     else
     {
         for(int i = 0; i < elements; ++i)
+        {
             vertices[i] = buffer[i];
-        for(int i = 0; i < elements; ++i)
             vertex_shader(&vertices[i]);
+        }
+    }
+    if(settings_int & CALCULATE_TRIANGLE_NORMALS)
+    {
+        for(int i = 0; i < elements; i += 3)
+        {
+            const Vec4 v1 = vertices[i + 1].pos - vertices[i].pos;
+            const Vec4 v2 = vertices[i + 2].pos - vertices[i].pos;
+            const Vec4 n  = Normalize(Vec4_Cross(v1, v2));
+            vertices[i].col = n;
+            vertices[i+1].col = n;
+            vertices[i+2].col = n;
+        }
     }
 
     switch(mode)
     {
         case POINTS:
         {
-            for(int i = 0; i < __elements; ++i)
+            for(int i = 0; i < elements; ++i)
             {
                 _tlDrawPoint(&vertices[i]);
             }
         }
         break;
         case LINES:
-            for(unsigned int i = 0; i < __elements; i+=3)
+            for(unsigned int i = 0; i < elements; i+=3)
             {
                 _tlDrawLine(&vertices[i], &vertices[i+1]);
                 _tlDrawLine(&vertices[i+1], &vertices[i+2]);
             }
         break;
         case LINES_STRIP:
-            for(unsigned int i = 0; i < __elements; i++)
+            for(unsigned int i = 0; i < elements; i++)
                 _tlDrawLine(&vertices[i], &vertices[i+1]);
         break;
         case LINES_LOOP:
-            for(unsigned int i = 0; i < __elements; i+=3)
+            for(unsigned int i = 0; i < elements; i+=3)
             {
                 _tlDrawLine(&vertices[i], &vertices[i+1]);
                 _tlDrawLine(&vertices[i+1], &vertices[i+2]);
@@ -204,15 +214,15 @@ void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_
             }
         break;
         case TRIANGLES:
-            for(unsigned int i = 0; i < __elements; i+=3)
+            for(unsigned int i = 0; i < elements; i+=3)
                  _tlDrawTriangle(&vertices[i], &vertices[i+1], &vertices[i+2]);
         break;
         case TRIANGLES_LOOP:
-            for(unsigned int i = 1; i < __elements; i+=2)
-                    _tlDrawTriangle(&vertices[i-1], &vertices[i], &vertices[(i+1) % __elements]);
+            for(unsigned int i = 1; i < elements; i+=2)
+                _tlDrawTriangle(&vertices[i-1], &vertices[i], &vertices[(i+1) % elements]);
         break;
         case TRIANGLES_STRIP:
-            for(unsigned int i = 1; i < __elements; i+=2)
+            for(unsigned int i = 1; i < elements; i+=2)
                 _tlDrawTriangle(&vertices[i-1], &vertices[i], &vertices[i+1]);
 		break;
         default:

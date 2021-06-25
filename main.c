@@ -1,9 +1,7 @@
+#include <math.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "include/Rasterizer.h"
-#include "include/Utility.h"
-#include "include/Matrix.h"
-#include "include/Input.h"
+#include "include/FBRaster.h"
 
 Mat4x4 scalem;
 Mat4x4 rotm;
@@ -21,12 +19,14 @@ Image img;
 int fragment(struct Vertex* vert, Color* output)
 {
     *output = SampleImage(&img, vert->uv);
+    *output *= fabsf(Vec4_Dot((Vec4){0,0,1,0}, vert->col));
 }
 
 int main()
 {
     tlInitialize();
     tlEnable(BACKFACE_CULLING);
+    tlEnable(CALCULATE_TRIANGLE_NORMALS);
     tlSetShaders(vertex, fragment);
     InitMouse();
     LoadImage("res/Wood_Box.png", &img);
@@ -73,26 +73,7 @@ int main()
         {{-1.0f, 1.0f, 1.0f, 1}, {0,0,0,0}, {0.0f, 1.0f}},
         {{ 1.0f,-1.0f, 1.0f, 1}, {0,0,0,0}, {1.0f, 0.0f}}
     };
-    const unsigned int cubeIndices[] = {
-		/*front*/
-		0, 1, 2,
-		2, 3, 0,
-		/*top*/
-		1, 5, 6,
-		6, 2, 1,
-		/*back*/
-		7, 6, 5,
-		5, 4, 7,
-		/*bottom*/
-		4, 0, 3,
-		3, 7, 4,
-		/*left*/
-		4, 5, 1,
-		1, 0, 4,
-		/*right*/
-		3, 2, 6,
-		6, 7, 3
-	};
+    
 	float rot = 0;
     float zoom = 50.f;
     int mouseX = 1920/3;

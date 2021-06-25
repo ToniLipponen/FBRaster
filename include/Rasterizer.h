@@ -13,10 +13,11 @@
 #define TRIANGLES_STRIP     0x6
 #define TRIANGLES_LOOP      0x7
 
-#define DEPTH_BUFFER_BIT 0x1
-#define COLOR_BUFFER_BIT 0x2
+#define DEPTH_BUFFER_BIT    0x1
+#define COLOR_BUFFER_BIT    0x2
 
-#define BACKFACE_CULLING 0x1
+#define BACKFACE_CULLING                0x1
+#define CALCULATE_TRIANGLE_NORMALS      0x2
 
 void tlInitialize();
 void tlEnable(unsigned int setting);
