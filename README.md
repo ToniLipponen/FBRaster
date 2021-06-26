@@ -10,7 +10,7 @@ A very barebones CPU rasterizer for drawing on linux /dev/fb. This is a hobby pr
   </list>
   
 <h2>Building:</h2>
-Run "make" in the project directory to build libFBRaster.a, or "make test" to build the library and a test program.
+Run "make" in the project directory to build libFBRaster.a, or "make example" to build the library and a test program.
 
 <h2>Using:</h2>
-Running sudo ./test in a TTY session. You have to use sudo because the library needs access to the /dev/fb0 device. 
+Running sudo ./example in a TTY session. You have to use sudo because the library needs access to the /dev/fb0 device. 
