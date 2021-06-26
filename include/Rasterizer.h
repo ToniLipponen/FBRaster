@@ -1,6 +1,10 @@
 #ifndef RASTERIZER_H_
 #define RASTERIZER_H_
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #include "Vector.h"
 #include "Vertex.h"
 #include "Image.h"
@@ -32,4 +36,7 @@ void tlDrawBuffer(Vertex* buffer, unsigned int elements);
 void tlDrawBufferIndexed(unsigned int mode, Vertex* buffer, unsigned int* indexbuffer, unsigned int elements);
 void tlSwapBuffers();
 void tlDestroy();
+#ifdef __cplusplus
+}
+#endif
 #endif

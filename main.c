@@ -20,6 +20,7 @@ int fragment(struct Vertex* vert, Color* output)
 {
     *output = SampleImage(&img, vert->uv);
     *output *= fabsf(Vec4_Dot((Vec4){0,0,1,0}, vert->col));
+    return 1;
 }
 
 int main()
@@ -78,8 +79,8 @@ int main()
     float zoom = 50.f;
     int mouseX = 1920/3;
 	int mouseY = 1080/2;
-	
-	while(1)
+	int frame = 0;
+	while(frame++ < 600)
     {
         mouse_event ev = MousePoll();
         mouseX += ev.xoffset;
@@ -91,7 +92,7 @@ int main()
         tlClear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
     	
 		trans = TranslateMat4X4((Vec4){mouseX, mouseY, 10, 0});
-	    rotm = RotateMat4X4(rot*1.5f, rot+=1.f, 0);
+	    rotm = RotateMat4X4(rot+=0.1f, rot, 0);
         scalem = ScaleMat4X4(zoom, zoom, zoom);
 
         tlDrawBufferIndexed(TRIANGLES, cube, 0, 36);

@@ -1,5 +1,5 @@
 all: Image.c Input.c Rasterizer.c
-	gcc Image.c Input.c Rasterizer.c -c -msse3 -O2 -march=native -Wall -fPIC
+	cc Image.c Input.c Rasterizer.c -c -fPIC -msse3 -O2 -ffast-math -march=x86-64 -mtune=x86-64
 
 clean:
 	rm *.o

@@ -17,7 +17,7 @@
 #include <sys/ioctl.h>
 
 
-static unsigned int settings_int = 0;
+static unsigned int settings_int;
 static int fbfd = 0;
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
@@ -134,7 +134,7 @@ void _tlDrawTriangle(Vertex* a, Vertex* b, Vertex* c)
 {
     if(settings_int & BACKFACE_CULLING)
     {
-        if(Vec4_Dot(a->col, (Vec4){0,0,1,0}) >= 0.0)
+        if(Vec4_Dot(a->col, (Vec4){0.f,0.f,1.f,0.f}) >= 0.0)
             return;
     }
 
