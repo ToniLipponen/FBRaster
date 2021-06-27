@@ -2,6 +2,8 @@
 
 A very barebones CPU rasterizer for drawing on linux /dev/fb. This is a hobby project, with the goal of implementing some kind of graphics pipeline outside of Xorg.
 
+![screenshot](https://user-images.githubusercontent.com/86045205/123545505-03c56600-d761-11eb-99ad-a2efe9dd3078.png)
+
 <h2>Features:</h2>
   <list>
     <li>Simple programmable vertex and fragment shaders.</li>
