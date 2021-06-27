@@ -35,6 +35,7 @@ void tlSetShaders(
 void tlDrawBuffer(Vertex* buffer, unsigned int elements);
 void tlDrawBufferIndexed(unsigned int mode, Vertex* buffer, unsigned int* indexbuffer, unsigned int elements);
 void tlSwapBuffers();
+void tlScreenshot(const char* filename);
 void tlDestroy();
 #ifdef __cplusplus
 }

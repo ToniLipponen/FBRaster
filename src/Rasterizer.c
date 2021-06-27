@@ -1,6 +1,8 @@
 #include "../include/Rasterizer.h"
 #include "../include/Vertex.h"
 #include "../include/Endianness.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "../include/stb_image_write.h"
 
 #include <limits.h>
 #include <pmmintrin.h>
@@ -234,6 +236,22 @@ void tlDrawBufferIndexed(unsigned int mode, Vertex *buffer, unsigned int* index_
 void tlSwapBuffers()
 {
     memcpy(front_buffer, back_buffer, screensize);
+}
+
+void tlScreenshot(const char *filename)
+{
+    struct _Color { unsigned char r,g,b,a; };
+    struct _Color* imagedata = malloc(width*height*sizeof(struct _Color));
+    struct _Color* bufferdata = (struct _Color*)front_buffer;
+    for(int i = 0; i < height*width; i++)
+    {
+        imagedata[i].b = bufferdata[i].r;
+        imagedata[i].g = bufferdata[i].g;
+        imagedata[i].r = bufferdata[i].b;
+        imagedata[i].a = 255;
+    }
+    stbi_write_png(filename, width, height, 4, imagedata, 0);
+    free(imagedata);
 }
 
 void tlDestroy()
