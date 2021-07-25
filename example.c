@@ -87,6 +87,7 @@ int main()
 		tlDrawBufferIndexed(TRIANGLES, cube, 0, 36);
 		tlSwapBuffers();
     }
+	
     FreeImage(&img);
     tlDestroy();
 }
