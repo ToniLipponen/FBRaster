@@ -12,8 +12,8 @@
 #include <sys/ioctl.h>
 
 
-static unsigned int settings_int = CALCULATE_TRIANGLE_NORMALS | BACKFACE_CULLING;
-static unsigned int depth_test = LESS;
+static unsigned int settings_int = DEPTH_TEST | CALCULATE_TRIANGLE_NORMALS | BACKFACE_CULLING;
+static unsigned int depth_test = LEQUAL;
 static int fbfd = 0;
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
@@ -33,7 +33,7 @@ void tlClear(unsigned int mask)
         for(int i = 0; i < height*width; ++i)
             ((int*)back_buffer)[i] = clear_color;
     if(mask & DEPTH_BUFFER_BIT)
-        memset(depth_buffer, 9999999, width*height*4);
+        memset(depth_buffer, (depth_test > 2) ? 0 : 9999999, width*height*4);
 }
 
 void tlClearColor(int c)
@@ -63,11 +63,11 @@ static void _tlDrawPoint(struct Vertex* vertex)
         {
             switch(depth_test)
             {
-                case LESS: if(vertex->pos[2] >= depth_buffer[index]) return;
-                case GREAT: if(vertex->pos[2] <= depth_buffer[index]) return;
-                case EQUAL:     if(vertex->pos[2] != depth_buffer[index]) return;
-                case LEQUAL:    if(vertex->pos[2] >  depth_buffer[index]) return;
-                case GEQUAL:    if(vertex->pos[2] <  depth_buffer[index]) return;
+                case LESS:      if(vertex->pos[2] >= depth_buffer[index]) return; break;
+                case GREAT:     if(vertex->pos[2] <= depth_buffer[index]) return; break;
+                case EQUAL:     if(vertex->pos[2] != depth_buffer[index]) return; break;
+                case LEQUAL:    if(vertex->pos[2] >  depth_buffer[index]) return; break;
+                case GEQUAL:    if(vertex->pos[2] <  depth_buffer[index]) return; break;
                 default: break;
             }
             Color color = {0};
@@ -117,6 +117,11 @@ void tlInitialize()
     back_buffer  = (unsigned char*)malloc(screensize);
     depth_buffer = (float*)malloc(width*height*sizeof(float));
     tlClear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
+}
+
+void tlDepthFunc(unsigned int func)
+{
+    depth_test = func;
 }
 
 void tlEnable(unsigned int setting)

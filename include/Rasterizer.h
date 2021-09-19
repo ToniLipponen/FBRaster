@@ -25,14 +25,15 @@ extern "C"{
 #define DEPTH_TEST                      0x4
 
 #define LESS    0x1
-#define GREAT   0x2
-#define LEQUAL  0x3
+#define LEQUAL  0x2
+#define GREAT   0x3
 #define GEQUAL  0x4
 #define EQUAL   0x5
 
 #define DISCARD_FRAGMENT -1
 
 void tlInitialize();
+void tlDepthFunc(unsigned int func);
 void tlEnable(unsigned int setting);
 void tlDisable(unsigned int setting);
 void tlClear(unsigned int mask);

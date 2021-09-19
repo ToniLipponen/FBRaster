@@ -19,6 +19,12 @@ void vertex(Vertex* vertex)
 }
 
 Image img;
+int fragment2(Vertex* vert, Color* output)
+{
+    *output = (Color){0, 255, 0, 255};
+    return 1;
+}
+
 int fragment(struct Vertex* vert, Color* output)
 {
     *output = SampleImage(&img, vert->uv);
@@ -30,6 +36,7 @@ int main()
 {
     tlInitialize();
     tlSetShaders(vertex, fragment);
+    tlDepthFunc(LEQUAL);
     LoadImage("res/Wood_Box.png", &img);
 
     Vertex cube[] = 
@@ -76,13 +83,16 @@ int main()
     scalem = ScaleMat4X4(200,200,200);
     trans  = TranslateMat4X4((Vec4){1920/2.f, 1080/2.f, 200, 1}); 
     float rot = 0;    
-	  while(1)
+    while(1)
     {
-		    rotm = RotateMat4X4(rot, rot, 0);
+        rotm = RotateMat4X4(rot, rot, 0);
         rot += 0.5f;
         tlClear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
-		    tlDrawBuffer(TRIANGLES, cube, 36);
-		    tlSwapBuffers();
+        tlSetShaders(vertex, fragment);
+            tlDrawBuffer(TRIANGLES, cube, 36);
+        tlSetShaders(vertex, fragment2);
+            tlDrawBuffer(LINES_LOOP, cube, 36);
+        tlSwapBuffers();
     }
 	
     FreeImage(&img);
