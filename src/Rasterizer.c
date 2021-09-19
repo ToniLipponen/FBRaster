@@ -13,7 +13,7 @@
 
 
 static unsigned int settings_int = CALCULATE_TRIANGLE_NORMALS | BACKFACE_CULLING;
-static unsigned int depth_test = LESS_THAN;
+static unsigned int depth_test = LESS;
 static int fbfd = 0;
 static struct fb_var_screeninfo vinfo;
 static struct fb_fix_screeninfo finfo;
@@ -63,8 +63,8 @@ static void _tlDrawPoint(struct Vertex* vertex)
         {
             switch(depth_test)
             {
-                case LESS_THAN: if(vertex->pos[2] >= depth_buffer[index]) return;
-                case MORE_THAN: if(vertex->pos[2] <= depth_buffer[index]) return;
+                case LESS: if(vertex->pos[2] >= depth_buffer[index]) return;
+                case GREAT: if(vertex->pos[2] <= depth_buffer[index]) return;
                 case EQUAL:     if(vertex->pos[2] != depth_buffer[index]) return;
                 case LEQUAL:    if(vertex->pos[2] >  depth_buffer[index]) return;
                 case GEQUAL:    if(vertex->pos[2] <  depth_buffer[index]) return;

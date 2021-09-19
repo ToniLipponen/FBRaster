@@ -22,6 +22,15 @@ extern "C"{
 
 #define BACKFACE_CULLING                0x1
 #define CALCULATE_TRIANGLE_NORMALS      0x2
+#define DEPTH_TEST                      0x4
+
+#define LESS    0x1
+#define GREAT   0x2
+#define LEQUAL  0x3
+#define GEQUAL  0x4
+#define EQUAL   0x5
+
+#define DISCARD_FRAGMENT -1
 
 void tlInitialize();
 void tlEnable(unsigned int setting);
@@ -32,7 +41,7 @@ void tlClearColorRGB(unsigned char r, unsigned char g, unsigned char b);
 void tlSetShaders(
     void (*Vertex) (Vertex* vertex), 
     int (*fragment)(struct Vertex* vertex, Color* output));
-void tlDrawBuffer(Vertex* buffer, unsigned int elements);
+void tlDrawBuffer(unsigned int mode, Vertex* buffer, unsigned int elements);
 void tlDrawBufferIndexed(unsigned int mode, Vertex* buffer, unsigned int* indexbuffer, unsigned int elements);
 void tlSwapBuffers();
 void tlScreenshot(const char* filename);

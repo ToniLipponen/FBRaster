@@ -73,7 +73,7 @@ int main()
     };
 
     rotm   = RotateMat4X4(0, 45, 0);
-    scalem = ScaleMat4X4(800,300,300);
+    scalem = ScaleMat4X4(200,200,200);
     trans  = TranslateMat4X4((Vec4){1920/2.f, 1080/2.f, 200, 1}); 
     float rot = 0;    
 	  while(1)
