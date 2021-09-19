@@ -29,8 +29,6 @@ int fragment(struct Vertex* vert, Color* output)
 int main()
 {
     tlInitialize();
-    tlEnable(BACKFACE_CULLING);
-    tlEnable(CALCULATE_TRIANGLE_NORMALS);
     tlSetShaders(vertex, fragment);
     LoadImage("res/Wood_Box.png", &img);
 
@@ -75,17 +73,16 @@ int main()
     };
 
     rotm   = RotateMat4X4(0, 45, 0);
-    scalem = ScaleMat4X4(100,100,100);
-    trans  = TranslateMat4X4((Vec4){1920/2.f, 1080/2.f, 200, 1});
-
+    scalem = ScaleMat4X4(800,300,300);
+    trans  = TranslateMat4X4((Vec4){1920/2.f, 1080/2.f, 200, 1}); 
     float rot = 0;    
-	while(1)
+	  while(1)
     {
-		rotm = RotateMat4X4(rot, rot, 0);
+		    rotm = RotateMat4X4(rot, rot, 0);
         rot += 0.5f;
         tlClear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
-		tlDrawBufferIndexed(TRIANGLES, cube, 0, 36);
-		tlSwapBuffers();
+		    tlDrawBuffer(TRIANGLES, cube, 36);
+		    tlSwapBuffers();
     }
 	
     FreeImage(&img);
